@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name:       Custom Wordfence Block Page Manager
- * Plugin URI:        https://github.com/your-username/custom-wordfence-template
+ * Plugin URI:        https://github.com/sflwa/custom-wordfence-template/
  * Description:       Manage your Wordfence 503 block page with a visual Wizard Mode or Advanced Code Editor.
  * Version:           2.1.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * Author:            Your Name
+ * Author:            South Florida Web Advisors
  * License:           GPL-2.0-or-later
  * Text Domain:       custom-wordfence-template
  */
