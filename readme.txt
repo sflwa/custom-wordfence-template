@@ -4,7 +4,7 @@ Tags: wordfence, block page, 503 template, custom lockout, security
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 2.1.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,14 @@ The Admin Unlock form prevents administrators from permanently locking themselve
 No. The plugin detects Wordfence updates via `upgrader_process_complete` and writes your configured template directly back into `wordfence/lib/wf503.php`.
 
 == Changelog ==
+
+= 2.3.0 =
+* **Feature:** Added client-side Base64 encoding on form submit and server-side decoding in sanitization to bypass ModSecurity, Cloudflare, and host-level WAF 403 Forbidden errors.
+* **Fix:** Improved CodeMirror instance retrieval during form submission.
+
+= 2.2.0 =
+* **Feature:** Implemented dual-target strategy writing simultaneously to `503.php` and `503-lockout.php` in Wordfence's `wf-waf` views directory.
+* **Enhancement:** Added `503-lockout.original.php` backup logic to ensure zero data loss on deactivation.
 
 = 2.1.0 =
 * Implemented locked-core section strategy for Wizard Mode (enforcing Admin Box, Tech Data, and Security Badge).
