@@ -3,7 +3,7 @@
  * Plugin Name:       Custom Wordfence Block Page Manager
  * Plugin URI:        https://github.com/sflwa/custom-wordfence-template/
  * Description:       Manage your Wordfence 503 block page with a visual Wizard Mode or Advanced Code Editor.
- * Version:           2.2.0
+ * Version:           2.3.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            South Florida Web Advisors
@@ -145,6 +145,14 @@ class Custom_WF_Block_Page_Manager {
     public function sanitize_and_build_template( $input ): array {
         $input = is_array( $input ) ? $input : array();
         $settings = wp_parse_args( $input, $this->get_default_settings() );
+
+        // Base64 Decode to bypass ModSecurity / Host WAF triggers
+        if ( ! empty( $settings['advanced_code'] ) ) {
+            $decoded = base64_decode( $settings['advanced_code'], true );
+            if ( false !== $decoded ) {
+                $settings['advanced_code'] = $decoded;
+            }
+        }
 
         $settings['custom_message'] = wp_kses_post( $settings['custom_message'] );
 
@@ -310,7 +318,7 @@ class Custom_WF_Block_Page_Manager {
         <div class="wrap">
             <h1>Custom Wordfence 503 Template Manager</h1>
             
-            <form method="post" action="options.php">
+            <form id="cwf_settings_form" method="post" action="options.php">
                 <?php settings_fields( 'cwf_settings_group' ); ?>
                 
                 <input type="hidden" id="cwf_mode_field" name="<?php echo $this->option_key; ?>[mode]" value="<?php echo esc_attr( $s['mode'] ); ?>">
@@ -390,6 +398,16 @@ class Custom_WF_Block_Page_Manager {
 
         <script>
         jQuery(document).ready(function($){
+            var cmEditor = null;
+
+            // Initialize CodeMirror instance
+            if ($('#cwf_code_editor').length && wp.codeEditor) {
+                cmEditor = wp.codeEditor.initialize('cwf_code_editor', {
+                    lineNumbers: true,
+                    mode: 'htmlmixed'
+                });
+            }
+
             // Tab Toggle
             $('.cwf-tab-btn').click(function(e) {
                 e.preventDefault();
@@ -416,13 +434,28 @@ class Custom_WF_Block_Page_Manager {
                 }).open();
             });
 
-            // CodeMirror Auto-Init
-            if ($('#cwf_code_editor').length && wp.codeEditor) {
-                wp.codeEditor.initialize('cwf_code_editor', {
-                    lineNumbers: true,
-                    mode: 'htmlmixed'
-                });
-            }
+            // BASE64 ENCODING ON SUBMIT (Protects payload against host ModSecurity / WAF 403 blocks)
+            $('#cwf_settings_form').on('submit', function() {
+                var editorVal = '';
+
+                if (cmEditor && cmEditor.codemirror) {
+                    editorVal = cmEditor.codemirror.getValue();
+                } else {
+                    editorVal = $('#cwf_code_editor').val();
+                }
+
+                if (editorVal) {
+                    try {
+                        var encodedVal = btoa(unescape(encodeURIComponent(editorVal)));
+                        if (cmEditor && cmEditor.codemirror) {
+                            cmEditor.codemirror.setValue(encodedVal);
+                        }
+                        $('#cwf_code_editor').val(encodedVal);
+                    } catch(err) {
+                        // Fallback: proceed unencoded if UTF-8 conversion fails
+                    }
+                }
+            });
         });
         </script>
         <?php
